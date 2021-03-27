@@ -133,6 +133,26 @@ class Type3E:
         recv_data = self._sock.recv(self._SOCKBUFSIZE)
         return recv_data
 
+    def _recv(self,readsize):
+        """recieve mc protocol data
+
+        Args: 
+            readsize(bytes): recv_data length
+        Returns:
+            recv_data
+        """
+        recv_data = bytes()
+        datasize = readsize
+        if len(recv_data) < datasize:
+            while True:
+                recv_data += self._sock.recv(self._SOCKBUFSIZE)
+                if len(recv_data) == datasize:
+                    break
+                elif len(recv_data) > datasize:
+                    answerstatus = 9999 #Temporary status code
+                    mcprotocolerror.check_mcprotocol_error(answerstatus)
+        return recv_data
+
     def _interpret_device(self, device):
         """Get device code and device number.
         device number is converted to base number for each device.
@@ -521,7 +541,9 @@ class Type3E:
         else:
             self._send(send_data)
         #reciev mc data
-        recv_data = self._recv()
+        #recv_data = self._recv()
+        recv_data_length = readsize*2+11    #binarymode
+        recv_data = self._recv(recv_data_length)
         self._check_cmdanswer(recv_data)
 
         word_values = []
